@@ -33,7 +33,7 @@ void setup() {
   // Sets authentication information and builds Twitter Factory
   connectTwitter();
   //getTimeline();  // Prints out all my tweets
-  getSearchTweets("#happy", 10);  // Prints out 
+  getSearchTweets("#Sochi2014", 10);  // Prints out 
 }
 
 
