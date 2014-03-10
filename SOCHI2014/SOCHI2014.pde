@@ -33,11 +33,15 @@ void setup() {
   // Sets authentication information and builds Twitter Factory
   connectTwitter();
   //getTimeline();  // Prints out all my tweets
+<<<<<<< HEAD
   //getSearchTweets("#happy", 10);  // Prints out
   r = getSearchTweets("#happy", 10);
   for (Status status : r.getTweets()) {
     println("@" + status.getUser().getScreenName() + ": " + status.getText());
   }
+=======
+  getSearchTweets("#Sochi2014", 10);  // Prints out 
+>>>>>>> 3b5ff128e6bfb0084b0db4b611079f8b383117cc
 }
 
 
