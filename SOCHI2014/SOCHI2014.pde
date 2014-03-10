@@ -6,7 +6,7 @@
  * Peter Caruso
  *
  */
- 
+
 // Authentication Details tied to my twitter (@shugoingplaces)
 // This is where you enter your Oauth info
 static String OAuthConsumerKey = "v2Z1zPBUladR4zoh2nJHTA";
@@ -24,7 +24,7 @@ TwitterFactory twitterFactory;
 Twitter twitter;
 RequestToken requestToken;
 String[] theSearchTweets = new String[11];
-
+QueryResult r;
 
 void setup() {
   size(640, 480);
@@ -33,12 +33,15 @@ void setup() {
   // Sets authentication information and builds Twitter Factory
   connectTwitter();
   //getTimeline();  // Prints out all my tweets
-  getSearchTweets("#happy", 10);  // Prints out 
+  //getSearchTweets("#happy", 10);  // Prints out
+  r = getSearchTweets("#happy", 10);
+  for (Status status : r.getTweets()) {
+    println("@" + status.getUser().getScreenName() + ": " + status.getText());
+  }
 }
 
 
 void draw() {
-
   background(15);
 }
 
@@ -79,17 +82,19 @@ void getTimeline() {
 
 
 // Search for tweets
-void getSearchTweets(String queryStr, int num) {
+QueryResult getSearchTweets(String queryStr, int num) {
   try {
     Query query = new Query(queryStr);
     query.count(num); // Get 10 of the 100 search results
     QueryResult result = twitter.search(query);
-    for (Status status : result.getTweets()) {
-      println("@" + status.getUser().getScreenName() + ": " + status.getText());
-    }
+    return result;
+    //    for (Status status : result.getTweets()) {
+    //      println("@" + status.getUser().getScreenName() + ": " + status.getText());
+    //    }
   } 
   catch (TwitterException e) {
     println("Search tweets: " + e);
+    return null;
   }
 }
 
