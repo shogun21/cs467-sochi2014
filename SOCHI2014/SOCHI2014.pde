@@ -29,7 +29,7 @@ QueryResult r;
 // Visualization Analytics
 int numKeyWords = 10;
 int numTweetsPer = 5;
-int totalTweets = 1000;
+int totalTweets = 100000;
 String[][] tweets = new String[numKeyWords][numTweetsPer];
 int[] freq = new int[numKeyWords];
 int[] sizes = new int[numKeyWords];
@@ -37,17 +37,34 @@ int[] count = new int[numKeyWords];
 
 
 // Our keywords to search
-String[] wordSearch = { "the", "bobsled", "curl", "figure skat", "hockey", "luge", "skeleton", "ski", "snowboard", "speed skat" };
+// Sports
+//String[] wordSearch = { 
+//  "biathelon", "bobsled", "curl", "figure skat", "hockey", "luge", "skeleton", "skiing", "snowboard", "speed skat"
+//};
+// Countries
+String[] wordSearch = { 
+  "japan", "america", "sweden", "russia", "norway", "ukraine", "canad", "germany", "korea", "netherland"
+};
 
 // Our keywords to display
-String[] wordDisplay = { "Biathlon", "Bob Sledding", "Curling", "Figure Skating", "Hockey", "Luge", "Skeleton", "Skiing", "Snowboarding", "Speed Skating" };
+// Sports
+//String[] wordDisplay = { 
+//  "Biathlon", "Bob Sledding", "Curling", "Figure Skating", "Hockey", "Luge", "Skeleton", "Skiing", "Snowboarding", "Speed Skating"
+//};
+// Countries
+String[] wordDisplay = { 
+  "Japan", "America", "Sweden", "Russia", "Norway", "Ukraine", "Canada", "Germany", "Korea", "Netherlands"
+};
 
 
 void setup() {
   // Window size
   size(640, 480);
+  rectMode(CORNERS);
+  noStroke();
+  textAlign(CENTER, CENTER);
   
-  for(i = 0; i< numKeyWords; i++){
+  for (i = 0; i< numKeyWords; i++) {
     freq[i] = 0;
     count[i] = 0;
   }  
@@ -58,41 +75,37 @@ void setup() {
   //getSearchTweets("#happy", 10);  // Prints out
   r = getSearchTweets("#SOCHI", totalTweets);
   for (Status status : r.getTweets()) {
-    println("@" + status.getUser().getScreenName() + ": " + status.getText());
-    for(i=0;i<numKeyWords; i++){
-      if(status.getText().toLowerCase().contains(wordSearch[i])){
+    //println("@" + status.getUser().getScreenName() + ": " + status.getText());
+    for (i=0;i<numKeyWords; i++) {
+      if (status.getText().toLowerCase().contains(wordSearch[i])) {
         freq[i]++;
-        if(count[i] < numTweetsPer){
+        if (count[i] < numTweetsPer) {
           tweets[i][count[i]] = "@" + status.getUser().getScreenName() + ": " + status.getText();
           count[i]++;
         }
       }
     }
   }
-  rectMode(CORNERS);
-  noStroke();
-  
-  textAlign(CENTER, CENTER);
-  
-  //DEBUG
-  for(i = 0; i< numKeyWords; i++){
+
+  // Debugging and resizing text
+  for (i = 0; i< numKeyWords; i++) {
     println("Frequency " + i + ") " + freq[i]);
     println("Tweets filled " + i + ") " + count[i]);
-    if (freq[i] <= 10) { //minimum
+    if (freq[i] <= 1) { //minimum
       sizes[i] = 10;
     }
-    else if (freq[i] >= 40){ //maximum
+    else if (freq[i] >= 10) { //maximum
       sizes[i] = 40;
     }
     else {
-      sizes[i] = freq[i];
+      sizes[i] = (3*freq[i])+10;
     }
   }
 }
 
 int page = 0;
-color bgcolor1 = color(15,15,15);
-color bgcolor2 = color(45,45,45);
+color bgcolor1 = color(15, 15, 15);
+color bgcolor2 = color(45, 45, 45);
 color row01 = #C6CAF2; // Light blue
 color row02 = #F5F6FF; // Off-white
 color textColor01 = #000000; // Black
@@ -103,17 +116,17 @@ int pageTextSize = 14;
 int i;
 
 void draw() {
-  
+
   // Display home screen
-  if(page == 0){
+  if (page == 0) {
     cursor(HAND);
-    for(i = 0; i<numKeyWords; i++){
+    for (i = 0; i<numKeyWords; i++) {
       // Alternate colors
-      if(i%2 == 0)
+      if (i%2 == 0)
         fill(row01);
       else
         fill(row02);
-        
+
       // Draw background rectangle
       rect(0, i*(height/10), width, (i+1)*(height/10));
       // Display keyword
@@ -121,8 +134,8 @@ void draw() {
       textSize(sizes[i]);
       text(wordDisplay[i], width/2, (i*2+1)*(height/20));
     }
-    
-  } else if(page == 1){
+  } 
+  else if (page == 1) {
     // User clicked a word, display this
     background(bgcolor2);
     cursor(ARROW);
@@ -130,10 +143,11 @@ void draw() {
     textSize(sizes[0]);
     text(wordDisplay[0], width/2, height/10);
     textSize(pageTextSize);
-    for(i = 0; i < count[0]; i++){
+    for (i = 0; i < count[0]; i++) {
       text(tweets[0][i], 0, (i+1)*(height/(count[0]+1)), width, (i+2)*(height/(count[0]+1)));
     }
-  } else if(page == 2){
+  } 
+  else if (page == 2) {
     // User clicked a word, display this
     background(bgcolor2);
     cursor(ARROW);
@@ -141,98 +155,146 @@ void draw() {
     textSize(sizes[1]);
     text(wordDisplay[1], width/2, height/10);
     textSize(pageTextSize);
-    for(i = 0; i < count[1]; i++){
+    for (i = 0; i < count[1]; i++) {
       text(tweets[1][i], 0, (i+1)*(height/(count[1]+1)), width, (i+2)*(height/(count[1]+1)));
     }
-  }else if(page == 3){
-    // User clicked a word, display this
-    cursor(ARROW);
-    background(bgcolor2);
-    textSize(32);
-    fill(textColor01);
-    text("3", width/2, height/2); 
-  }else if(page == 4){
-    // User clicked a word, display this
-    cursor(ARROW);
-    background(bgcolor2);
-    textSize(32);
-    fill(textColor01);
-    text("4", width/2, height/2); 
-  }else if(page == 5){
-    // User clicked a word, display this
-    cursor(ARROW);
-    background(bgcolor2);
-    textSize(32);
-    fill(textColor01);
-    text("5", width/2, height/2); 
-  } else if(page == 6){
-    // User clicked a word, display this
-    cursor(ARROW);
-    background(bgcolor2);
-    textSize(32);
-    fill(textColor01);
-    text("6", width/2, height/2); 
-  }else if(page == 7){
-    // User clicked a word, display this
-    cursor(ARROW);
-    background(bgcolor2);
-    textSize(32);
-    fill(textColor01);
-    text("7", width/2, height/2); 
-  }else if(page == 8){
-    // User clicked a word, display this
-    cursor(ARROW);
-    background(bgcolor2);
-    textSize(32);
-    fill(textColor01);
-    text("8", width/2, height/2); 
-  }else if(page == 9){
-    // User clicked a word, display this
-    cursor(ARROW);
-    background(bgcolor2);
-    textSize(32);
-    fill(textColor01);
-    text("9", width/2, height/2); 
-  }else if(page == 10){
-    // User clicked a word, display this
-    cursor(ARROW);
-    background(bgcolor2);
-    textSize(32);
-    fill(textColor01);
-    text("10", width/2, height/2); 
   }
-  
-}
-
-void mouseClicked(){
-  if(page == 0){
-    if(mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < (height/10)){
-     page = 1;
-    } else if(mouseX > 0 && mouseX < width && mouseY > 1*(height/10) && mouseY < 2*(height/10)){
-     page = 2;
-    } else if(mouseX > 0 && mouseX < width && mouseY > 2*(height/10) && mouseY < 3*(height/10)){
-     page = 3;
-    } else if(mouseX > 0 && mouseX < width && mouseY > 3*(height/10) && mouseY < 4*(height/10)){
-     page = 4;
-    } else if(mouseX > 0 && mouseX < width && mouseY > 4*(height/10) && mouseY < 5*(height/10)){
-     page = 5;
-    } else if(mouseX > 0 && mouseX < width && mouseY > 5*(height/10) && mouseY < 6*(height/10)){
-     page = 6;
-    } else if(mouseX > 0 && mouseX < width && mouseY > 6*(height/10) && mouseY < 7*(height/10)){
-     page = 7;
-    } else if(mouseX > 0 && mouseX < width && mouseY > 7*(height/10) && mouseY < 8*(height/10)){
-     page = 8;
-    } else if(mouseX > 0 && mouseX < width && mouseY > 8*(height/10) && mouseY < 9*(height/10)){
-     page = 9;
-    } else if(mouseX > 0 && mouseX < width && mouseY > 9*(height/10) && mouseY < 10*(height/10)){
-     page = 10;
+  else if (page == 3) {
+    // User clicked a word, display this
+    background(bgcolor2);
+    cursor(ARROW);
+    fill(pageText);
+    textSize(sizes[2]);
+    text(wordDisplay[2], width/2, height/10);
+    textSize(pageTextSize);
+    for (i = 0; i < count[2]; i++) {
+      text(tweets[2][i], 0, (i+1)*(height/(count[2]+1)), width, (i+2)*(height/(count[2]+1)));
+    }
+  }
+  else if (page == 4) {
+    // User clicked a word, display this
+    background(bgcolor2);
+    cursor(ARROW);
+    fill(pageText);
+    textSize(sizes[3]);
+    text(wordDisplay[3], width/2, height/10);
+    textSize(pageTextSize);
+    for (i = 0; i < count[3]; i++) {
+      text(tweets[3][i], 0, (i+1)*(height/(count[3]+1)), width, (i+2)*(height/(count[3]+1)));
+    }
+  }
+  else if (page == 5) {
+    // User clicked a word, display this
+    background(bgcolor2);
+    cursor(ARROW);
+    fill(pageText);
+    textSize(sizes[4]);
+    text(wordDisplay[4], width/2, height/10);
+    textSize(pageTextSize);
+    for (i = 0; i < count[4]; i++) {
+      text(tweets[4][i], 0, (i+1)*(height/(count[4]+1)), width, (i+2)*(height/(count[4]+1)));
+    }
+  } 
+  else if (page == 6) {
+    // User clicked a word, display this
+    background(bgcolor2);
+    cursor(ARROW);
+    fill(pageText);
+    textSize(sizes[5]);
+    text(wordDisplay[5], width/2, height/10);
+    textSize(pageTextSize);
+    for (i = 0; i < count[5]; i++) {
+      text(tweets[5][i], 0, (i+1)*(height/(count[5]+1)), width, (i+2)*(height/(count[5]+1)));
+    }
+  }
+  else if (page == 7) {
+    // User clicked a word, display this
+    background(bgcolor2);
+    cursor(ARROW);
+    fill(pageText);
+    textSize(sizes[6]);
+    text(wordDisplay[6], width/2, height/10);
+    textSize(pageTextSize);
+    for (i = 0; i < count[6]; i++) {
+      text(tweets[6][i], 0, (i+1)*(height/(count[6]+1)), width, (i+2)*(height/(count[6]+1)));
+    }
+  }
+  else if (page == 8) {
+    // User clicked a word, display this
+    background(bgcolor2);
+    cursor(ARROW);
+    fill(pageText);
+    textSize(sizes[7]);
+    text(wordDisplay[7], width/2, height/10);
+    textSize(pageTextSize);
+    for (i = 0; i < count[7]; i++) {
+      text(tweets[7][i], 0, (i+1)*(height/(count[7]+1)), width, (i+2)*(height/(count[7]+1)));
+    }
+  }
+  else if (page == 9) {
+    // User clicked a word, display this
+    background(bgcolor2);
+    cursor(ARROW);
+    fill(pageText);
+    textSize(sizes[8]);
+    text(wordDisplay[8], width/2, height/10);
+    textSize(pageTextSize);
+    for (i = 0; i < count[8]; i++) {
+      text(tweets[8][i], 0, (i+1)*(height/(count[8]+1)), width, (i+2)*(height/(count[8]+1)));
+    }
+  }
+  else if (page == 10) {
+    // User clicked a word, display this
+    background(bgcolor2);
+    cursor(ARROW);
+    fill(pageText);
+    textSize(sizes[9]);
+    text(wordDisplay[9], width/2, height/10);
+    textSize(pageTextSize);
+    for (i = 0; i < count[9]; i++) {
+      text(tweets[9][i], 0, (i+1)*(height/(count[9]+1)), width, (i+2)*(height/(count[9]+1)));
     }
   }
 }
 
-void keyPressed(){
-  if(keyCode == BACKSPACE || keyCode == ESC){
-    page = 0; 
+void mouseClicked() {
+  if (page == 0) {
+    if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < (height/10)) {
+      page = 1;
+    } 
+    else if (mouseX > 0 && mouseX < width && mouseY > 1*(height/10) && mouseY < 2*(height/10)) {
+      page = 2;
+    } 
+    else if (mouseX > 0 && mouseX < width && mouseY > 2*(height/10) && mouseY < 3*(height/10)) {
+      page = 3;
+    } 
+    else if (mouseX > 0 && mouseX < width && mouseY > 3*(height/10) && mouseY < 4*(height/10)) {
+      page = 4;
+    } 
+    else if (mouseX > 0 && mouseX < width && mouseY > 4*(height/10) && mouseY < 5*(height/10)) {
+      page = 5;
+    } 
+    else if (mouseX > 0 && mouseX < width && mouseY > 5*(height/10) && mouseY < 6*(height/10)) {
+      page = 6;
+    } 
+    else if (mouseX > 0 && mouseX < width && mouseY > 6*(height/10) && mouseY < 7*(height/10)) {
+      page = 7;
+    } 
+    else if (mouseX > 0 && mouseX < width && mouseY > 7*(height/10) && mouseY < 8*(height/10)) {
+      page = 8;
+    } 
+    else if (mouseX > 0 && mouseX < width && mouseY > 8*(height/10) && mouseY < 9*(height/10)) {
+      page = 9;
+    } 
+    else if (mouseX > 0 && mouseX < width && mouseY > 9*(height/10) && mouseY < 10*(height/10)) {
+      page = 10;
+    }
+  }
+}
+
+void keyPressed() {
+  if (keyCode == BACKSPACE || keyCode == ESC) {
+    page = 0;
   }
 }
 
