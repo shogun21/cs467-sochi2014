@@ -35,39 +35,21 @@ int[] freq = new int[numKeyWords];
 int[] sizes = new int[numKeyWords];
 int[] count = new int[numKeyWords];
 
+
 // Our keywords to search
-String w01 = "biathlon";
-String w02 = "bobsled";
-String w03 = "curl";
-String w04 = "figure skat";
-String w05 = "hockey";
-String w06 = "luge";
-String w07 = "skeleton";
-String w08 = "ski";
-String w09 = "snowboard";
-String w10 = "speed skat";
+String[] wordSearch = { "the", "bobsled", "curl", "figure skat", "hockey", "luge", "skeleton", "ski", "snowboard", "speed skat" };
 
 // Our keywords to display
-String kw01 = "Biathlon";
-String kw02 = "Bob Sledding";
-String kw03 = "Curling";
-String kw04 = "Figure Skating";
-String kw05 = "Hockey";
-String kw06 = "Luge";
-String kw07 = "Skeleton";
-String kw08 = "Skiing";
-String kw09 = "Snowboarding";
-String kw10 = "Speed Skating";
+String[] wordDisplay = { "Biathlon", "Bob Sledding", "Curling", "Figure Skating", "Hockey", "Luge", "Skeleton", "Skiing", "Snowboarding", "Speed Skating" };
 
 
 void setup() {
+  // Window size
   size(640, 480);
-  background(15);
   
-  for(int i = 0; i< numKeyWords; i++){
+  for(i = 0; i< numKeyWords; i++){
     freq[i] = 0;
     count[i] = 0;
-    sizes[i] = 32; // Default font size
   }  
 
   // Sets authentication information and builds Twitter Factory
@@ -77,16 +59,35 @@ void setup() {
   r = getSearchTweets("#SOCHI", totalTweets);
   for (Status status : r.getTweets()) {
     println("@" + status.getUser().getScreenName() + ": " + status.getText());
-    if(status.getText().toLowerCase().contains(w01)){
-      freq[0]++;
-      if(count[0] < numTweetsPer)
-        tweets[0][count[0]] = "@" + status.getUser().getScreenName() + ": " + status.getText();
+    for(i=0;i<numKeyWords; i++){
+      if(status.getText().toLowerCase().contains(wordSearch[i])){
+        freq[i]++;
+        if(count[i] < numTweetsPer){
+          tweets[i][count[i]] = "@" + status.getUser().getScreenName() + ": " + status.getText();
+          count[i]++;
+        }
+      }
     }
   }
   rectMode(CORNERS);
   noStroke();
   
   textAlign(CENTER, CENTER);
+  
+  //DEBUG
+  for(i = 0; i< numKeyWords; i++){
+    println("Frequency " + i + ") " + freq[i]);
+    println("Tweets filled " + i + ") " + count[i]);
+    if (freq[i] <= 10) { //minimum
+      sizes[i] = 10;
+    }
+    else if (freq[i] >= 40){ //maximum
+      sizes[i] = 40;
+    }
+    else {
+      sizes[i] = freq[i];
+    }
+  }
 }
 
 int page = 0;
@@ -96,79 +97,53 @@ color row01 = #C6CAF2; // Light blue
 color row02 = #F5F6FF; // Off-white
 color textColor01 = #000000; // Black
 color homeText = #000000;
+color pageText = #EEEEEE;
+int pageTextSize = 14;
+
+int i;
 
 void draw() {
   
+  // Display home screen
   if(page == 0){
     cursor(HAND);
-    // Display home screen, display this
-    fill(row01);
-    rect(0,0, width, height/10);
-    fill(row02);
-    rect(0,1*(height/10), width, 2*(height/10));
-    fill(row01);
-    rect(0,2*(height/10), width, 3*(height/10));
-    fill(row02);
-    rect(0,3*(height/10), width, 4*(height/10));
-    fill(row01);
-    rect(0,4*(height/10), width, 5*(height/10));
-    fill(row02);
-    rect(0,5*(height/10), width, 6*(height/10));
-    fill(row01);
-    rect(0,6*(height/10), width, 7*(height/10));
-    fill(row02);
-    rect(0,7*(height/10), width, 8*(height/10));
-    fill(row01);
-    rect(0,8*(height/10), width, 9*(height/10));
-    fill(row02);
-    rect(0,9*(height/10), width, 10*(height/10));
-    
-    // Display text
-    fill(homeText);
-    textSize(sizes[0]);
-    text(kw01, width/2, height/20);
-    
-    textSize(sizes[1]);
-    text(kw02, width/2, 3*(height/20));
-    
-    textSize(sizes[2]);
-    text(kw03, width/2, 5*(height/20));
-    
-    textSize(sizes[3]);
-    text(kw04, width/2, 7*(height/20));
-    
-    textSize(sizes[4]);
-    text(kw05, width/2, 9*(height/20));
-    
-    textSize(sizes[5]);
-    text(kw06, width/2, 11*(height/20));
-    
-    textSize(sizes[6]);
-    text(kw07, width/2, 13*(height/20));
-    
-    textSize(sizes[7]);
-    text(kw08, width/2, 15*(height/20));
-    
-    textSize(sizes[8]);
-    text(kw09, width/2, 17*(height/20));
-    
-    textSize(sizes[9]);
-    text(kw10, width/2, 19*(height/20));
+    for(i = 0; i<numKeyWords; i++){
+      // Alternate colors
+      if(i%2 == 0)
+        fill(row01);
+      else
+        fill(row02);
+        
+      // Draw background rectangle
+      rect(0, i*(height/10), width, (i+1)*(height/10));
+      // Display keyword
+      fill(homeText);
+      textSize(sizes[i]);
+      text(wordDisplay[i], width/2, (i*2+1)*(height/20));
+    }
     
   } else if(page == 1){
     // User clicked a word, display this
-    cursor(ARROW);
     background(bgcolor2);
-    textSize(32);
-    fill(textColor01);
-    text("1", width/2, height/2); 
+    cursor(ARROW);
+    fill(pageText);
+    textSize(sizes[0]);
+    text(wordDisplay[0], width/2, height/10);
+    textSize(pageTextSize);
+    for(i = 0; i < count[0]; i++){
+      text(tweets[0][i], 0, (i+1)*(height/(count[0]+1)), width, (i+2)*(height/(count[0]+1)));
+    }
   } else if(page == 2){
     // User clicked a word, display this
-    cursor(ARROW);
     background(bgcolor2);
-    textSize(32);
-    fill(textColor01);
-    text("2", width/2, height/2); 
+    cursor(ARROW);
+    fill(pageText);
+    textSize(sizes[1]);
+    text(wordDisplay[1], width/2, height/10);
+    textSize(pageTextSize);
+    for(i = 0; i < count[1]; i++){
+      text(tweets[1][i], 0, (i+1)*(height/(count[1]+1)), width, (i+2)*(height/(count[1]+1)));
+    }
   }else if(page == 3){
     // User clicked a word, display this
     cursor(ARROW);
