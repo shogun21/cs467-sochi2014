@@ -1,11 +1,11 @@
 /* CS 467 - Project 2 - #SOCHI2014
- * Shugo Tanaka
- * Emily Hammel
- * Gul Mariam
- * Anna Guo
- * Peter Caruso
- *
- */
+* Shugo Tanaka
+* Emily Hammel
+* Gul Mariam
+* Anna Guo
+* Peter Caruso
+*
+*/
 
 // Authentication Details tied to my twitter (@shugoingplaces)
 // This is where you enter your Oauth info
@@ -30,32 +30,42 @@ QueryResult r;
 int numKeyWords = 10;
 int numTweetsPer = 5;
 int totalTweets = 100000;
-String[][] tweets = new String[numKeyWords][numTweetsPer];
-int[] freq = new int[numKeyWords];
-int[] sizes = new int[numKeyWords];
-int[] count = new int[numKeyWords];
+
+// Sports Tweets
+String[][] tweetsS = new String[numKeyWords][numTweetsPer];
+int[] freqS = new int[numKeyWords];
+int[] sizeS = new int[numKeyWords];
+int[] countS = new int[numKeyWords];
+
+// Countries
+String[][] tweetsC = new String[numKeyWords][numTweetsPer];
+int[] freqC = new int[numKeyWords];
+int[] sizeC = new int[numKeyWords];
+int[] countC = new int[numKeyWords];
 
 
 // Our keywords to search
 // Sports
-//String[] wordSearch = { 
-//  "biathelon", "bobsled", "curl", "figure skat", "hockey", "luge", "skeleton", "skiing", "snowboard", "speed skat"
-//};
+String[] wordSearchS = { 
+  "biathelon", "bobsled", "curl", "figure skat", "hockey", "luge", "skeleton", "skiing", "snowboard", "speed skat"
+};
 // Countries
-String[] wordSearch = { 
-  "japan", "america", "sweden", "russia", "norway", "ukraine", "canad", "germany", "korea", "netherland"
+String[] wordSearchC = { 
+  "japan", "usa", "sweden", "russia", "norway", "ukraine", "canad", "germany", "korea", "netherland"
 };
 
 // Our keywords to display
 // Sports
-//String[] wordDisplay = { 
-//  "Biathlon", "Bob Sledding", "Curling", "Figure Skating", "Hockey", "Luge", "Skeleton", "Skiing", "Snowboarding", "Speed Skating"
-//};
+String[] wordDisplayS = { 
+  "Biathlon", "Bob Sledding", "Curling", "Figure Skating", "Hockey", "Luge", "Skeleton", "Skiing", "Snowboarding", "Speed Skating"
+};
 // Countries
-String[] wordDisplay = { 
-  "Japan", "America", "Sweden", "Russia", "Norway", "Ukraine", "Canada", "Germany", "Korea", "Netherlands"
+String[] wordDisplayC = { 
+  "Japan", "USA", "Sweden", "Russia", "Norway", "Ukraine", "Canada", "Germany", "Korea", "Netherlands"
 };
 
+
+PImage bg_c, bg_s;
 
 void setup() {
   // Window size
@@ -63,10 +73,15 @@ void setup() {
   rectMode(CORNERS);
   noStroke();
   textAlign(CENTER, CENTER);
+  smooth();
+  
+  bg_c = loadImage("bg_c.png");
   
   for (i = 0; i< numKeyWords; i++) {
-    freq[i] = 0;
-    count[i] = 0;
+    freqC[i] = 0;
+    countC[i] = 0;
+    freqS[i] = 0;
+    countS[i] = 0;
   }  
 
   // Sets authentication information and builds Twitter Factory
@@ -77,11 +92,18 @@ void setup() {
   for (Status status : r.getTweets()) {
     //println("@" + status.getUser().getScreenName() + ": " + status.getText());
     for (i=0;i<numKeyWords; i++) {
-      if (status.getText().toLowerCase().contains(wordSearch[i])) {
-        freq[i]++;
-        if (count[i] < numTweetsPer) {
-          tweets[i][count[i]] = "@" + status.getUser().getScreenName() + ": " + status.getText();
-          count[i]++;
+      if (status.getText().toLowerCase().contains(wordSearchC[i])) {
+        freqC[i]++;
+        if (countC[i] < numTweetsPer) {
+          tweetsC[i][countC[i]] = "@" + status.getUser().getScreenName() + ": " + status.getText();
+          countC[i]++;
+        }
+      }
+      if (status.getText().toLowerCase().contains(wordSearchS[i])) {
+        freqS[i]++;
+        if (countS[i] < numTweetsPer) {
+          tweetsS[i][countS[i]] = "@" + status.getUser().getScreenName() + ": " + status.getText();
+          countS[i]++;
         }
       }
     }
@@ -89,28 +111,39 @@ void setup() {
 
   // Debugging and resizing text
   for (i = 0; i< numKeyWords; i++) {
-    println("Frequency " + i + ") " + freq[i]);
-    println("Tweets filled " + i + ") " + count[i]);
-    if (freq[i] <= 1) { //minimum
-      sizes[i] = 10;
+    //println("Frequency " + i + ") " + freq[i]);
+    //println("Tweets filled " + i + ") " + count[i]);
+    if (freqC[i] <= 1) { //minimum
+      sizeC[i] = 10;
     }
-    else if (freq[i] >= 10) { //maximum
-      sizes[i] = 40;
+    else if (freqC[i] >= 10) { //maximum
+      sizeC[i] = 40;
     }
     else {
-      sizes[i] = (3*freq[i])+10;
+      sizeC[i] = (3*freqC[i])+10;
+    }
+    
+    if (freqS[i] <= 1) { //minimum
+      sizeS[i] = 10;
+    }
+    else if (freqS[i] >= 10) { //maximum
+      sizeS[i] = 40;
+    }
+    else {
+      sizeS[i] = (3*freqS[i])+10;
     }
   }
 }
 
 int page = 0;
+int mode = 0;
 color bgcolor1 = color(15, 15, 15);
-color bgcolor2 = color(45, 45, 45);
+color bgcolor2 = #F5F6FF;
 color row01 = #C6CAF2; // Light blue
 color row02 = #F5F6FF; // Off-white
 color textColor01 = #000000; // Black
 color homeText = #000000;
-color pageText = #EEEEEE;
+color pageText = #000000;
 int pageTextSize = 14;
 
 int i;
@@ -120,19 +153,30 @@ void draw() {
   // Display home screen
   if (page == 0) {
     cursor(HAND);
+
     for (i = 0; i<numKeyWords; i++) {
       // Alternate colors
-      if (i%2 == 0)
-        fill(row01);
-      else
-        fill(row02);
+    if(mode == 0){
+      background(bg_c);
+    }
+      if(mode == 1){
+        if (i%2 == 0)
+          fill(row02);
+        else
+          fill(row01);
+      }
 
       // Draw background rectangle
       rect(0, i*(height/10), width, (i+1)*(height/10));
       // Display keyword
       fill(homeText);
-      textSize(sizes[i]);
-      text(wordDisplay[i], width/2, (i*2+1)*(height/20));
+      if(mode == 0){
+        textSize(sizeC[i]);
+        text(wordDisplayC[i], width/2, (i*2+1)*(height/20));
+      } else if(mode == 1) {
+        textSize(sizeS[i]);
+        text(wordDisplayS[i], width/2, (i*2+1)*(height/20));
+      }
     }
   } 
   else if (page == 1) {
@@ -140,11 +184,20 @@ void draw() {
     background(bgcolor2);
     cursor(ARROW);
     fill(pageText);
-    textSize(sizes[0]);
-    text(wordDisplay[0], width/2, height/10);
-    textSize(pageTextSize);
-    for (i = 0; i < count[0]; i++) {
-      text(tweets[0][i], 0, (i+1)*(height/(count[0]+1)), width, (i+2)*(height/(count[0]+1)));
+    if(mode == 0){
+      textSize(sizeC[0]);
+      text(wordDisplayC[0], width/2, height/10);
+      textSize(pageTextSize);
+      for (i = 0; i < countC[0]; i++) {
+        text(tweetsC[0][i], 0, (i+1)*(height/(countC[0]+1)), width, (i+2)*(height/(countC[0]+1)));
+      }
+    } else if(mode == 1){
+      textSize(sizeS[0]);
+      text(wordDisplayS[0], width/2, height/10);
+      textSize(pageTextSize);
+      for (i = 0; i < countS[0]; i++) {
+        text(tweetsS[0][i], 0, (i+1)*(height/(countS[0]+1)), width, (i+2)*(height/(countS[0]+1)));
+      }
     }
   } 
   else if (page == 2) {
@@ -152,11 +205,20 @@ void draw() {
     background(bgcolor2);
     cursor(ARROW);
     fill(pageText);
-    textSize(sizes[1]);
-    text(wordDisplay[1], width/2, height/10);
-    textSize(pageTextSize);
-    for (i = 0; i < count[1]; i++) {
-      text(tweets[1][i], 0, (i+1)*(height/(count[1]+1)), width, (i+2)*(height/(count[1]+1)));
+    if(mode == 0){
+      textSize(sizeC[1]);
+      text(wordDisplayC[1], width/2, height/10);
+      textSize(pageTextSize);
+      for (i = 0; i < countC[1]; i++) {
+        text(tweetsC[1][i], 0, (i+1)*(height/(countC[1]+1)), width, (i+2)*(height/(countC[1]+1)));
+      }
+    } else if(mode == 1){
+      textSize(sizeS[1]);
+      text(wordDisplayS[1], width/2, height/10);
+      textSize(pageTextSize);
+      for (i = 0; i < countS[1]; i++) {
+        text(tweetsS[1][i], 0, (i+1)*(height/(countS[1]+1)), width, (i+2)*(height/(countS[1]+1)));
+      }
     }
   }
   else if (page == 3) {
@@ -164,11 +226,20 @@ void draw() {
     background(bgcolor2);
     cursor(ARROW);
     fill(pageText);
-    textSize(sizes[2]);
-    text(wordDisplay[2], width/2, height/10);
-    textSize(pageTextSize);
-    for (i = 0; i < count[2]; i++) {
-      text(tweets[2][i], 0, (i+1)*(height/(count[2]+1)), width, (i+2)*(height/(count[2]+1)));
+    if(mode == 0){
+      textSize(sizeC[2]);
+      text(wordDisplayC[2], width/2, height/10);
+      textSize(pageTextSize);
+      for (i = 0; i < countC[2]; i++) {
+        text(tweetsC[2][i], 0, (i+1)*(height/(countC[2]+1)), width, (i+2)*(height/(countC[2]+1)));
+      }
+    } else if(mode == 1){
+      textSize(sizeS[2]);
+      text(wordDisplayS[2], width/2, height/10);
+      textSize(pageTextSize);
+      for (i = 0; i < countS[2]; i++) {
+        text(tweetsS[2][i], 0, (i+1)*(height/(countS[2]+1)), width, (i+2)*(height/(countS[2]+1)));
+      }
     }
   }
   else if (page == 4) {
@@ -176,11 +247,20 @@ void draw() {
     background(bgcolor2);
     cursor(ARROW);
     fill(pageText);
-    textSize(sizes[3]);
-    text(wordDisplay[3], width/2, height/10);
-    textSize(pageTextSize);
-    for (i = 0; i < count[3]; i++) {
-      text(tweets[3][i], 0, (i+1)*(height/(count[3]+1)), width, (i+2)*(height/(count[3]+1)));
+    if (mode == 0){
+      textSize(sizeC[3]);
+      text(wordDisplayC[3], width/2, height/10);
+      textSize(pageTextSize);
+      for (i = 0; i < countC[3]; i++) {
+        text(tweetsC[3][i], 0, (i+1)*(height/(countC[3]+1)), width, (i+2)*(height/(countC[3]+1)));
+      }
+    } else if(mode == 1){
+      textSize(sizeS[3]);
+      text(wordDisplayS[3], width/2, height/10);
+      textSize(pageTextSize);
+      for (i = 0; i < countS[3]; i++) {
+        text(tweetsS[3][i], 0, (i+1)*(height/(countS[3]+1)), width, (i+2)*(height/(countS[3]+1)));
+      }
     }
   }
   else if (page == 5) {
@@ -188,11 +268,20 @@ void draw() {
     background(bgcolor2);
     cursor(ARROW);
     fill(pageText);
-    textSize(sizes[4]);
-    text(wordDisplay[4], width/2, height/10);
-    textSize(pageTextSize);
-    for (i = 0; i < count[4]; i++) {
-      text(tweets[4][i], 0, (i+1)*(height/(count[4]+1)), width, (i+2)*(height/(count[4]+1)));
+    if(mode == 0){
+      textSize(sizeC[4]);
+      text(wordDisplayC[4], width/2, height/10);
+      textSize(pageTextSize);
+      for (i = 0; i < countC[4]; i++) {
+        text(tweetsC[4][i], 0, (i+1)*(height/(countC[4]+1)), width, (i+2)*(height/(countC[4]+1)));
+      }
+    } else if(mode == 1){
+      textSize(sizeS[4]);
+      text(wordDisplayS[4], width/2, height/10);
+      textSize(pageTextSize);
+      for (i = 0; i < countS[4]; i++) {
+        text(tweetsS[4][i], 0, (i+1)*(height/(countS[4]+1)), width, (i+2)*(height/(countS[4]+1)));
+      }
     }
   } 
   else if (page == 6) {
@@ -200,11 +289,20 @@ void draw() {
     background(bgcolor2);
     cursor(ARROW);
     fill(pageText);
-    textSize(sizes[5]);
-    text(wordDisplay[5], width/2, height/10);
-    textSize(pageTextSize);
-    for (i = 0; i < count[5]; i++) {
-      text(tweets[5][i], 0, (i+1)*(height/(count[5]+1)), width, (i+2)*(height/(count[5]+1)));
+    if(mode == 0){
+      textSize(sizeC[5]);
+      text(wordDisplayC[5], width/2, height/10);
+      textSize(pageTextSize);
+      for (i = 0; i < countC[5]; i++) {
+        text(tweetsC[5][i], 0, (i+1)*(height/(countC[5]+1)), width, (i+2)*(height/(countC[5]+1)));
+      }
+    } else if(mode == 1){
+      textSize(sizeS[5]);
+      text(wordDisplayS[5], width/2, height/10);
+      textSize(pageTextSize);
+      for (i = 0; i < countS[5]; i++) {
+        text(tweetsS[5][i], 0, (i+1)*(height/(countS[5]+1)), width, (i+2)*(height/(countS[5]+1)));
+      }
     }
   }
   else if (page == 7) {
@@ -212,11 +310,20 @@ void draw() {
     background(bgcolor2);
     cursor(ARROW);
     fill(pageText);
-    textSize(sizes[6]);
-    text(wordDisplay[6], width/2, height/10);
-    textSize(pageTextSize);
-    for (i = 0; i < count[6]; i++) {
-      text(tweets[6][i], 0, (i+1)*(height/(count[6]+1)), width, (i+2)*(height/(count[6]+1)));
+    if (mode == 0){
+      textSize(sizeC[6]);
+      text(wordDisplayC[6], width/2, height/10);
+      textSize(pageTextSize);
+      for (i = 0; i < countC[6]; i++) {
+        text(tweetsC[6][i], 0, (i+1)*(height/(countC[6]+1)), width, (i+2)*(height/(countC[6]+1)));
+      }
+    } else if(mode == 1){
+      textSize(sizeS[6]);
+      text(wordDisplayS[6], width/2, height/10);
+      textSize(pageTextSize);
+      for (i = 0; i < countS[6]; i++) {
+        text(tweetsS[6][i], 0, (i+1)*(height/(countS[6]+1)), width, (i+2)*(height/(countS[6]+1)));
+      }
     }
   }
   else if (page == 8) {
@@ -224,11 +331,20 @@ void draw() {
     background(bgcolor2);
     cursor(ARROW);
     fill(pageText);
-    textSize(sizes[7]);
-    text(wordDisplay[7], width/2, height/10);
-    textSize(pageTextSize);
-    for (i = 0; i < count[7]; i++) {
-      text(tweets[7][i], 0, (i+1)*(height/(count[7]+1)), width, (i+2)*(height/(count[7]+1)));
+    if(mode == 0){
+      textSize(sizeC[7]);
+      text(wordDisplayC[7], width/2, height/10);
+      textSize(pageTextSize);
+      for (i = 0; i < countC[7]; i++) {
+        text(tweetsC[7][i], 0, (i+1)*(height/(countC[7]+1)), width, (i+2)*(height/(countC[7]+1)));
+      }
+    } else if(mode == 1){
+      textSize(sizeS[7]);
+      text(wordDisplayS[7], width/2, height/10);
+      textSize(pageTextSize);
+      for (i = 0; i < countS[7]; i++) {
+        text(tweetsS[7][i], 0, (i+1)*(height/(countS[7]+1)), width, (i+2)*(height/(countS[7]+1)));
+      }
     }
   }
   else if (page == 9) {
@@ -236,11 +352,20 @@ void draw() {
     background(bgcolor2);
     cursor(ARROW);
     fill(pageText);
-    textSize(sizes[8]);
-    text(wordDisplay[8], width/2, height/10);
-    textSize(pageTextSize);
-    for (i = 0; i < count[8]; i++) {
-      text(tweets[8][i], 0, (i+1)*(height/(count[8]+1)), width, (i+2)*(height/(count[8]+1)));
+    if(mode == 0){
+      textSize(sizeC[8]);
+      text(wordDisplayC[8], width/2, height/10);
+      textSize(pageTextSize);
+      for (i = 0; i < countC[8]; i++) {
+        text(tweetsC[8][i], 0, (i+1)*(height/(countC[8]+1)), width, (i+2)*(height/(countC[8]+1)));
+      }
+    } else if(mode == 1){
+      textSize(sizeS[8]);
+      text(wordDisplayS[8], width/2, height/10);
+      textSize(pageTextSize);
+      for (i = 0; i < countS[8]; i++) {
+        text(tweetsS[8][i], 0, (i+1)*(height/(countS[8]+1)), width, (i+2)*(height/(countS[8]+1)));
+      }
     }
   }
   else if (page == 10) {
@@ -248,11 +373,20 @@ void draw() {
     background(bgcolor2);
     cursor(ARROW);
     fill(pageText);
-    textSize(sizes[9]);
-    text(wordDisplay[9], width/2, height/10);
-    textSize(pageTextSize);
-    for (i = 0; i < count[9]; i++) {
-      text(tweets[9][i], 0, (i+1)*(height/(count[9]+1)), width, (i+2)*(height/(count[9]+1)));
+    if(mode == 0){
+      textSize(sizeC[9]);
+      text(wordDisplayC[9], width/2, height/10);
+      textSize(pageTextSize);
+      for (i = 0; i < countC[9]; i++) {
+        text(tweetsC[9][i], 0, (i+1)*(height/(countC[9]+1)), width, (i+2)*(height/(countC[9]+1)));
+      }
+    } else if(mode == 1){
+      textSize(sizeS[9]);
+      text(wordDisplayS[9], width/2, height/10);
+      textSize(pageTextSize);
+      for (i = 0; i < countS[9]; i++) {
+        text(tweetsS[9][i], 0, (i+1)*(height/(countS[9]+1)), width, (i+2)*(height/(countS[9]+1)));
+      }
     }
   }
 }
@@ -295,6 +429,10 @@ void mouseClicked() {
 void keyPressed() {
   if (keyCode == BACKSPACE || keyCode == ESC) {
     page = 0;
+  } else if(key == 's' || key == 'S'){
+    mode = 1;
+  } else if(key == 'c' || key == 'C'){
+    mode = 0;
   }
 }
 
@@ -350,4 +488,3 @@ QueryResult getSearchTweets(String queryStr, int num) {
     return null;
   }
 }
-
